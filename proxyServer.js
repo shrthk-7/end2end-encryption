@@ -44,5 +44,5 @@ server.addListener("request", async (clientReq, clientRes) => {
 });
 
 server.listen(PORT, () => {
-  console.log("listening on localhost:" + PORT);
+  console.log(`proxy server listening on localhost:${PORT}`);
 });
