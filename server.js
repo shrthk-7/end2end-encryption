@@ -1,5 +1,6 @@
 const http = require("http");
-const PORT = 5000;
+
+const SERVER_PORT = 5000;
 
 http
   .createServer((req, res) => {
@@ -10,6 +11,6 @@ http
       res.end("Message Received");
     });
   })
-  .listen(PORT, () => {
-    console.log(`actual server listening on: localhost:${PORT}`);
+  .listen(SERVER_PORT, () => {
+    console.log(`actual server listening on: localhost:${SERVER_PORT}`);
   });

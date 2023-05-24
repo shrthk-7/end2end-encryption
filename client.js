@@ -1,24 +1,25 @@
 const http = require("http");
-const PROXY_PORT = 5000;
+
+const PROXY_PORT = 5005;
 
 process.stdin.addListener("data", (chunk) => {
-  const request = http.request(
+  const req = http.request(
     {
       host: "localhost",
       port: PROXY_PORT,
       path: "/",
       method: "POST",
     },
-    (response) => {
-      response.addListener("data", (chunk) => {
-        console.log(`Server: ${chunk.toString()}`);
+    (res) => {
+      res.addListener("data", (chunk) => {
+        console.log(`SERVER: ${chunk.toString()}`);
       });
     }
   );
 
   const message = chunk.toString().replace(/[\r\n]/gm, "");
-  request.write(JSON.stringify({ message }));
-  request.end(() => {
-    console.log(`You: Message (${message}) Sent to Server`);
+  req.write(JSON.stringify({ message }));
+  req.end(() => {
+    console.log(`YOU: Message (${message}) Sent to Server`);
   });
 });

@@ -1,48 +1,44 @@
 const http = require("http");
-const PORT = 5005;
+
+const PROXY_PORT = 5005;
+const SERVER_PORT = 5000;
 
 const server = http.createServer();
 
 server.addListener("request", async (clientReq, clientRes) => {
-  console.log(`${clientReq.method} : ${clientReq.url}`);
-
   clientReq.body = "";
-
   clientReq.addListener("data", (chunk) => {
     clientReq.body += chunk;
   });
 
   clientReq.addListener("end", () => {
+    console.log(`CLIENT: ${clientReq.body}`);
+
     const options = {
       host: "localhost",
-      port: 5000,
+      port: SERVER_PORT,
       path: clientReq.url,
       method: clientReq.method,
       headers: clientReq.headers,
     };
 
-    const proxyReq = http.request(options, (proxyRes) => {
-      proxyRes.data = "";
-      proxyRes.addListener("data", (chunk) => {
-        proxyRes.data += chunk;
+    const serverReq = http.request(options, (serverRes) => {
+      serverRes.data = "";
+      serverRes.addListener("data", (chunk) => {
+        serverRes.data += chunk;
       });
-      proxyRes.addListener("end", () => {
-        console.log(proxyRes.data);
+      serverRes.addListener("end", () => {
+        console.log(`SERVER: ${serverRes.data}`);
       });
     });
 
-    proxyReq.addListener("error", (err) => {
-      console.log(`An error occurred: `);
-      console.log({ err });
+    serverReq.write(clientReq.body);
+    serverReq.end(() => {
+      clientRes.end("Message Sent to Server");
     });
-
-    proxyReq.write(clientReq.body);
-    proxyReq.end();
-
-    clientRes.end("OK");
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`proxy server listening on localhost:${PORT}`);
+server.listen(PROXY_PORT, () => {
+  console.log(`proxy server listening on localhost:${PROXY_PORT}`);
 });
