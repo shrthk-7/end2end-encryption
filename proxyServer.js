@@ -12,11 +12,12 @@ server.addListener("request", async (clientReq, clientRes) => {
   });
 
   clientReq.addListener("end", () => {
-    console.log(`CLIENT: ${clientReq.body}`);
+    // console.log(`CLIENT: ${clientReq.body}`);
+    clientReq.body = JSON.parse(clientReq.body);
 
     const options = {
       host: "localhost",
-      port: SERVER_PORT,
+      port: clientReq.body.recipient,
       path: clientReq.url,
       method: clientReq.method,
       headers: clientReq.headers,
@@ -32,7 +33,7 @@ server.addListener("request", async (clientReq, clientRes) => {
       });
     });
 
-    serverReq.write(clientReq.body);
+    serverReq.write(JSON.stringify(clientReq.body));
     serverReq.end(() => {
       clientRes.end("Message Sent to Server");
     });
