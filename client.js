@@ -6,7 +6,7 @@ http
       console.log(chunk.toString());
     });
     req.on("end", () => {
-      res.end("ok");
+      res.end("msg recvd");
     });
   })
   .listen(5000);
