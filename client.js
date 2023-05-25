@@ -11,7 +11,7 @@ if (!process.argv[3]) {
 
 const THIS_GUY_PORT = process.argv[2];
 const OTHER_GUY_PORT = process.argv[3];
-const PROXY_PORT = 5005;
+const SERVER_PORT = 5005;
 
 // --------------- RSA KEY GENERATION --------------------
 
@@ -20,7 +20,7 @@ const { publicKey: myPublicKey, decryptData, encryptData } = require("./RSA");
 let recipientPublicKey = null;
 const getRecipientPublicKey = async () => {
   recipientPublicKey = await fetchData.post({
-    port: PROXY_PORT,
+    port: SERVER_PORT,
     path: "/public-key",
     message: JSON.stringify({
       sender: THIS_GUY_PORT,
@@ -48,7 +48,7 @@ process.stdin.addListener("data", async (chunk) => {
   );
 
   await fetchData.post({
-    port: PROXY_PORT,
+    port: SERVER_PORT,
     path: "/",
     message: JSON.stringify({
       message: message,
