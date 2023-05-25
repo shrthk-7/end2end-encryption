@@ -1,13 +1,11 @@
 const http = require("http");
 
-const get = ({ host, port, path }) => {
-  host |= "localhost";
-  path |= "/";
-  port |= 5000;
+const get = ({ port, path, headers }) => {
+  const host = "localhost";
 
   return new Promise((resolve, reject) => {
     const request = http.request(
-      { host, port, path, method: "GET" },
+      { host, port, path, method: "GET", headers },
       (response) => {
         response.body = "";
         console.log(response.headers);
@@ -28,11 +26,8 @@ const get = ({ host, port, path }) => {
   });
 };
 
-const post = ({ host, port, path, message }) => {
-  host |= "localhost";
-  path |= "/";
-  port |= 5000;
-  message |= "hello world";
+const post = ({ port, path, headers, message }) => {
+  const host = "localhost";
 
   return new Promise((resolve, reject) => {
     const request = http.request(
@@ -41,6 +36,7 @@ const post = ({ host, port, path, message }) => {
         port,
         path,
         method: "POST",
+        headers,
       },
       (response) => {
         response.body = "";

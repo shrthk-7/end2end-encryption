@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 
 const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
-  modulusLength: 512,
+  modulusLength: 2048,
 });
 
 const exportedPublicKey = publicKey.export({
@@ -16,7 +16,9 @@ const encryptData = (_data, _publicKey) => {
 };
 
 const decryptData = (_encryptedData) => {
-  return crypto.privateDecrypt(privateKey, _encryptedData);
+  return crypto
+    .privateDecrypt(privateKey, Buffer.from(_encryptedData, "base64"))
+    .toString();
 };
 
 module.exports = {

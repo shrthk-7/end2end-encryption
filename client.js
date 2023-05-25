@@ -1,4 +1,5 @@
 const http = require("http");
+const fetchData = require("./fetchData");
 
 if (!process.argv[3]) {
   console.log(
@@ -12,9 +13,25 @@ const THIS_GUY_PORT = process.argv[2];
 const OTHER_GUY_PORT = process.argv[3];
 const PROXY_PORT = 5005;
 
+// --------------- RSA KEY GENERATION --------------------
+
+const { publicKey: myPublicKey, decryptData, encryptData } = require("./RSA");
+
+let recipientPublicKey = null;
+const getRecipientPublicKey = async () => {
+  recipientPublicKey = await fetchData.post({
+    port: PROXY_PORT,
+    path: "/public-key",
+    message: JSON.stringify({
+      sender: THIS_GUY_PORT,
+      recipient: OTHER_GUY_PORT,
+    }),
+  });
+};
+
 // --------------- FOR SENDING ----------------------------
 
-process.stdin.addListener("data", (chunk) => {
+process.stdin.addListener("data", async (chunk) => {
   const req = http.request(
     {
       host: "localhost",
@@ -30,7 +47,20 @@ process.stdin.addListener("data", (chunk) => {
     }
   );
 
-  const message = chunk.toString().replace(/[\r\n]/gm, "");
+  /*
+    MESSAGE GENERATION
+    1. converting buffer to string
+    2. removing trailing \r\n
+    3. encrypting it using the recipients publicKey
+  */
+  if (!recipientPublicKey) {
+    await getRecipientPublicKey();
+  }
+  const message = encryptData(
+    chunk.toString().replace(/[\r\n]/gm, ""),
+    recipientPublicKey
+  );
+
   req.write(
     JSON.stringify({
       message: message,
@@ -50,12 +80,17 @@ server.listen(THIS_GUY_PORT, () => {
 
 server.addListener("request", (req, res) => {
   req.body = "";
+  if (req.url === "/public-key" && req.method === "GET") {
+    return res.end(myPublicKey);
+  }
+
   req.addListener("data", (chunk) => {
     req.body += chunk;
   });
   req.addListener("end", () => {
     req.body = JSON.parse(req.body);
-    console.log(`${req.body.sender}: ${req.body.message}`);
+    const message = decryptData(req.body.message);
+    console.log(`${req.body.sender}: ${message}`);
     res.end("Message Received");
   });
 });

@@ -1,42 +1,36 @@
 const http = require("http");
+const fetchData = require("./fetchData");
 
 const PROXY_PORT = 5005;
-const SERVER_PORT = 5000;
 
 const server = http.createServer();
 
-server.addListener("request", async (clientReq, clientRes) => {
+server.addListener("request", (clientReq, clientRes) => {
   clientReq.body = "";
   clientReq.addListener("data", (chunk) => {
     clientReq.body += chunk;
   });
 
-  clientReq.addListener("end", () => {
-    // console.log(`CLIENT: ${clientReq.body}`);
+  clientReq.addListener("end", async () => {
     clientReq.body = JSON.parse(clientReq.body);
 
     const options = {
-      host: "localhost",
       port: clientReq.body.recipient,
       path: clientReq.url,
-      method: clientReq.method,
       headers: clientReq.headers,
     };
 
-    const serverReq = http.request(options, (serverRes) => {
-      serverRes.data = "";
-      serverRes.addListener("data", (chunk) => {
-        serverRes.data += chunk;
-      });
-      serverRes.addListener("end", () => {
-        console.log(`SERVER: ${serverRes.data}`);
-      });
-    });
+    if (clientReq.url === "/public-key") {
+      const serverRes = await fetchData.get(options);
+      return clientRes.end(serverRes);
+    }
 
-    serverReq.write(JSON.stringify(clientReq.body));
-    serverReq.end(() => {
-      clientRes.end("Message Sent to Server");
-    });
+    if (clientReq.url === "/") {
+      options.message = JSON.stringify(clientReq.body);
+      console.log({ message: clientReq.body.message });
+      const serverRes = await fetchData.post(options);
+      clientRes.end(serverRes);
+    }
   });
 });
 
