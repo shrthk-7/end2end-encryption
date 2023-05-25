@@ -5,7 +5,7 @@ const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
 });
 
 /*
-	OF THE FORM:
+	AFTER EXPORTING, OF THE FORM:
 
 	-----BEGIN PUBLIC KEY-----
 	<public key>
