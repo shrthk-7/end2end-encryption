@@ -32,27 +32,13 @@ const getRecipientPublicKey = async () => {
 // --------------- FOR SENDING ----------------------------
 
 process.stdin.addListener("data", async (chunk) => {
-  const req = http.request(
-    {
-      host: "localhost",
-      port: PROXY_PORT,
-      path: "/",
-      method: "POST",
-    },
-    (res) => {
-      res.body = "";
-      res.addListener("data", (chunk) => {
-        res.body += chunk;
-      });
-    }
-  );
-
   /*
     MESSAGE GENERATION
     1. converting buffer to string
     2. removing trailing \r\n
     3. encrypting it using the recipients publicKey
   */
+
   if (!recipientPublicKey) {
     await getRecipientPublicKey();
   }
@@ -61,14 +47,15 @@ process.stdin.addListener("data", async (chunk) => {
     recipientPublicKey
   );
 
-  req.write(
-    JSON.stringify({
+  await fetchData.post({
+    port: PROXY_PORT,
+    path: "/",
+    message: JSON.stringify({
       message: message,
       sender: THIS_GUY_PORT,
       recipient: OTHER_GUY_PORT,
-    })
-  );
-  req.end();
+    }),
+  });
 });
 
 // ------------ FOR RECEIVING ---------------------------------
